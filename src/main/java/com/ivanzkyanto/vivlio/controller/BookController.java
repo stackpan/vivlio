@@ -35,7 +35,7 @@ public class BookController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<BookResponse> getById(@PathVariable("id") Integer id) {
+    public ResponseEntity<BookResponse> getById(@PathVariable("id") String id) {
         Book book = bookService.findById(id);
         BookResponse response = bookMapper.toResponse(book);
 
@@ -52,7 +52,7 @@ public class BookController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<BookResponse> update(@PathVariable("id") Integer id, @RequestBody @Valid BookRequest request) {
+    public ResponseEntity<BookResponse> update(@PathVariable("id") String id, @RequestBody @Valid BookRequest request) {
         Book model = bookMapper.toModel(request);
         model.setId(id);
 
@@ -63,13 +63,13 @@ public class BookController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> delete(@PathVariable("id") Integer id) {
+    public ResponseEntity<Void> delete(@PathVariable("id") String id) {
         bookService.deleteById(id);
         return ResponseEntity.ok().build();
     }
 
     @GetMapping("/{id}/reviews")
-    public ResponseEntity<List<ReviewResponse>> getReviews(@PathVariable("id") Integer id) {
+    public ResponseEntity<List<ReviewResponse>> getReviews(@PathVariable("id") String id) {
         List<String> reviews = bookService.findReviewsById(id);
         List<ReviewResponse> response = reviews.stream()
                 .map(ReviewResponse::new)
@@ -78,7 +78,7 @@ public class BookController {
     }
 
     @PostMapping("/{id}/reviews")
-    public ResponseEntity<ReviewResponse> addReview(@PathVariable("id") Integer id, @RequestBody @Valid ReviewRequest request) {
+    public ResponseEntity<ReviewResponse> addReview(@PathVariable("id") String id, @RequestBody @Valid ReviewRequest request) {
         String review = bookService.addReviewById(id, request.getReview());
         ReviewResponse response = new ReviewResponse(review);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);

@@ -1,6 +1,7 @@
 package com.ivanzkyanto.vivlio.repository.gateway.impl;
 
 import com.ivanzkyanto.vivlio.entity.BookEntity;
+import com.ivanzkyanto.vivlio.exception.ResourceNotFoundException;
 import com.ivanzkyanto.vivlio.model.Book;
 import com.ivanzkyanto.vivlio.repository.BookRepository;
 import com.ivanzkyanto.vivlio.repository.gateway.BookGatewayRepository;
@@ -8,10 +9,7 @@ import com.ivanzkyanto.vivlio.util.BookMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Repository
@@ -32,8 +30,8 @@ public class BookGatewayRepositoryImpl implements BookGatewayRepository {
     }
 
     @Override
-    public Optional<Book> findById(Integer id) {
-        Optional<BookEntity> optionalEntity = bookRepository.findById(id);
+    public Optional<Book> findById(String id) {
+        Optional<BookEntity> optionalEntity = bookRepository.findById(toUuid(id));
 
         if (optionalEntity.isEmpty())
             return Optional.empty();
@@ -63,9 +61,8 @@ public class BookGatewayRepositoryImpl implements BookGatewayRepository {
     }
 
     @Override
-    public Book updateById(Integer id, Book book) {
-        BookEntity entityForUpdate = new BookEntity();
-        entityForUpdate.setId(id);
+    public Book updateById(String id, Book book) {
+        BookEntity entityForUpdate = safeFindById(id);
 
         BookEntity newEntity = bookMapper.toEntity(book);
 
@@ -76,16 +73,13 @@ public class BookGatewayRepositoryImpl implements BookGatewayRepository {
     }
 
     @Override
-    public void deleteById(Integer id) {
-        bookRepository.deleteById(id);
+    public void deleteById(String id) {
+        bookRepository.deleteById(toUuid(id));
     }
 
     @Override
-    public List<String> findReviewsById(Integer id) {
-        Optional<BookEntity> optionalBookEntity = bookRepository.findById(id);
-
-        assert optionalBookEntity.isPresent();
-        BookEntity entity = optionalBookEntity.get();
+    public List<String> findReviewsById(String id) {
+        BookEntity entity = safeFindById(id);
 
         List<String> reviews = entity.getReviews();
 
@@ -96,15 +90,27 @@ public class BookGatewayRepositoryImpl implements BookGatewayRepository {
     }
 
     @Override
-    public String addReviewById(Integer id, String review) {
-        Optional<BookEntity> optionalBookEntity = bookRepository.findById(id);
-
-        assert optionalBookEntity.isPresent();
-        BookEntity entity = optionalBookEntity.get();
+    public String addReviewById(String id, String review) {
+        BookEntity entity = safeFindById(id);
 
         entity.getReviews().add(review);
 
         bookRepository.save(entity);
         return review;
+    }
+
+    private BookEntity safeFindById(String id) {
+        Optional<BookEntity> optionalBookEntity = bookRepository.findById(toUuid(id));
+
+        assert optionalBookEntity.isPresent();
+        return optionalBookEntity.get();
+    }
+
+    private UUID toUuid(String id) {
+        try {
+            return UUID.fromString(id);
+        } catch (IllegalArgumentException ex) {
+            throw new ResourceNotFoundException(Book.class.getSimpleName(), id);
+        }
     }
 }

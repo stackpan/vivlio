@@ -9,14 +9,29 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class BookResponse {
 
-    private Integer id;
+    private String id;
 
     private String title;
+
+    private String description;
 
     private String language;
 
     private String year;
 
     private String author;
+
+    private Dimension dimension;
+
+    @Data
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class Dimension {
+
+        private Double width;
+
+        private Double height;
+
+    }
 
 }

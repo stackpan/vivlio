@@ -7,6 +7,7 @@ import lombok.NoArgsConstructor;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 @Entity
 @Table(name = "books")
@@ -16,10 +17,12 @@ import java.util.List;
 public class BookEntity {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer id;
+    @GeneratedValue(strategy = GenerationType.UUID)
+    private UUID id;
 
     private String title;
+
+    private String description;
 
     private String language;
 
@@ -27,9 +30,27 @@ public class BookEntity {
 
     private String author;
 
+    @Column(name = "total_pages")
+    private Integer totalPages;
+
+    @Embedded
+    private Dimension dimension;
+
     @ElementCollection(fetch = FetchType.LAZY)
     @CollectionTable(name = "reviews", joinColumns = @JoinColumn(name = "book_id"))
     @Column(name = "body")
     private List<String> reviews = new ArrayList<>();
+
+    @Embeddable
+    @Data
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class Dimension {
+
+        private Double width;
+
+        private Double height;
+
+    }
 
 }

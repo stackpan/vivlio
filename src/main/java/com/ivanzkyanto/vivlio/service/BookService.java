@@ -8,15 +8,15 @@ public interface BookService {
 
     List<Book> findAll();
 
-    Book findById(Integer id);
+    Book findById(String id);
 
     Book create(Book book);
 
     Book update(Book book);
 
-    void deleteById(Integer id);
+    void deleteById(String id);
 
-    List<String> findReviewsById(Integer id);
+    List<String> findReviewsById(String id);
 
-    String addReviewById(Integer id, String review);
+    String addReviewById(String id, String review);
 }

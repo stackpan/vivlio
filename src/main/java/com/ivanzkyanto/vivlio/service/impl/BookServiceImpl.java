@@ -26,7 +26,7 @@ public class BookServiceImpl implements BookService {
 
     @Transactional(readOnly = true)
     @Override
-    public Book findById(Integer id) {
+    public Book findById(String id) {
         return findByIdOrAbort(id);
     }
 
@@ -36,7 +36,7 @@ public class BookServiceImpl implements BookService {
         Optional<Book> optionalAvailableBook = bookRepository.findByTitle(book.getTitle());
 
         if (optionalAvailableBook.isPresent())
-            throw new ResourceAlreadyExistsException(Book.class.getSimpleName(), optionalAvailableBook.get().getId().toString());
+            throw new ResourceAlreadyExistsException(Book.class.getSimpleName(), optionalAvailableBook.get().getId());
 
         return bookRepository.save(book);
     }
@@ -44,34 +44,34 @@ public class BookServiceImpl implements BookService {
     @Transactional
     @Override
     public Book update(Book book) {
-        Integer id = book.getId();
+        String id = book.getId();
         findByIdOrAbort(id);
         return bookRepository.updateById(id, book);
     }
 
     @Transactional
     @Override
-    public void deleteById(Integer id) {
+    public void deleteById(String id) {
         findByIdOrAbort(id);
         bookRepository.deleteById(id);
     }
 
     @Transactional(readOnly = true)
     @Override
-    public List<String> findReviewsById(Integer id) {
+    public List<String> findReviewsById(String id) {
         findByIdOrAbort(id);
         return bookRepository.findReviewsById(id);
     }
 
     @Transactional
     @Override
-    public String addReviewById(Integer id, String review) {
+    public String addReviewById(String id, String review) {
         findByIdOrAbort(id);
         return bookRepository.addReviewById(id, review);
     }
 
-    private Book findByIdOrAbort(Integer id) {
+    private Book findByIdOrAbort(String id) {
         return bookRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException(Book.class.getSimpleName(), id.toString()));
+                .orElseThrow(() -> new ResourceNotFoundException(Book.class.getSimpleName(), id));
     }
 }

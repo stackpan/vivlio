@@ -9,18 +9,18 @@ public interface BookGatewayRepository {
 
     List<Book> findAll();
 
-    Optional<Book> findById(Integer id);
+    Optional<Book> findById(String id);
 
     Optional<Book> findByTitle(String title);
 
     Book save(Book book);
 
-    Book updateById(Integer id, Book book);
+    Book updateById(String id, Book book);
 
-    void deleteById(Integer id);
+    void deleteById(String id);
 
-    List<String> findReviewsById(Integer id);
+    List<String> findReviewsById(String id);
 
-    String addReviewById(Integer id, String review);
+    String addReviewById(String id, String review);
 
 }
