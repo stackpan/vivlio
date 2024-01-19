@@ -7,6 +7,7 @@ import com.ivanzkyanto.vivlio.repository.gateway.BookGatewayRepository;
 import com.ivanzkyanto.vivlio.repository.gateway.BookReviewGatewayRepository;
 import com.ivanzkyanto.vivlio.service.BookService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -23,8 +24,8 @@ public class BookServiceImpl implements BookService {
 
     @Transactional(readOnly = true)
     @Override
-    public List<Book> findAll() {
-        return bookRepository.findAll();
+    public Page<Book> findAll(Integer size, Integer pageNumber, String sort, String direction) {
+        return bookRepository.findAll(size, pageNumber, sort, direction);
     }
 
     @Transactional(readOnly = true)

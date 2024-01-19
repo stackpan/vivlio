@@ -1,19 +1,20 @@
 package com.ivanzkyanto.vivlio.controller;
 
-import com.ivanzkyanto.vivlio.controller.dto.BookRequest;
-import com.ivanzkyanto.vivlio.controller.dto.BookResponse;
-import com.ivanzkyanto.vivlio.controller.dto.ReviewRequest;
-import com.ivanzkyanto.vivlio.controller.dto.ReviewResponse;
+import com.ivanzkyanto.vivlio.controller.dto.*;
 import com.ivanzkyanto.vivlio.model.Book;
 import com.ivanzkyanto.vivlio.service.BookService;
 import com.ivanzkyanto.vivlio.util.BookMapper;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
 @RestController
 @RequestMapping("/books")
@@ -25,62 +26,105 @@ public class BookController {
     private final BookMapper bookMapper;
 
     @GetMapping
-    public ResponseEntity<List<BookResponse>> getAll() {
-        List<Book> books = bookService.findAll();
-        List<BookResponse> response = books.stream()
+    public ResponseEntity<WebResponse<List<BookResponse>>> getAll(
+            @RequestParam(value = "size", required = false, defaultValue = "3") Integer size,
+            @RequestParam(value = "page", required = false, defaultValue = "0") Integer page,
+            @RequestParam(value = "sort", required = false, defaultValue = "title") String sort,
+            @RequestParam(value = "direction", required = false, defaultValue = "asc") String direction
+    ) {
+        Page<Book> pagedBook = bookService.findAll(size, page, sort, direction);
+
+        List<BookResponse> data = pagedBook.stream()
                 .map(bookMapper::toResponse)
+                .map(item -> item
+                        .add(linkTo(methodOn(this.getClass()).getById(item.getId())).withSelfRel()
+                        ))
                 .toList();
 
+        Pagination pagination = Pagination.builder()
+                .currentPage(pagedBook.getPageable().getPageNumber())
+                .totalPages(pagedBook.getTotalPages())
+                .totalItems(pagedBook.getTotalElements())
+                .pagePerItem(pagedBook.getPageable().getPageSize())
+                .totalCurrentPageItems(data.size())
+                .build();
+
+        if (pagedBook.hasPrevious()) {
+            pagination.add(linkTo(methodOn(this.getClass()).getAll(size, page - 1, sort, direction)).withRel("previous"));
+        }
+
+        if (pagedBook.hasNext()) {
+            pagination.add(linkTo(methodOn(this.getClass()).getAll(size, page + 1, sort, direction)).withRel("next"));
+        }
+
+        WebResponse<List<BookResponse>> response = new WebResponse<>("Success.", data, pagination);
         return ResponseEntity.ok(response);
     }
 
-    @GetMapping("/{id}")
-    public ResponseEntity<BookResponse> getById(@PathVariable("id") String id) {
-        Book book = bookService.findById(id);
-        BookResponse response = bookMapper.toResponse(book);
+    public ResponseEntity<WebResponse<List<BookResponse>>> getAll() {
+        return getAll(null, null, null, null);
+    }
 
+    @GetMapping("/{id}")
+    public ResponseEntity<WebResponse<BookResponse>> getById(@PathVariable("id") String id) {
+        Book book = bookService.findById(id);
+        BookResponse data = bookMapper.toResponse(book)
+                .add(linkTo(methodOn(this.getClass()).getAll()).withRel("books"))
+                .add(linkTo(methodOn(this.getClass()).getReviews(id)).withRel("reviews"));
+
+        WebResponse<BookResponse> response = new WebResponse<>("Success.", data);
         return ResponseEntity.ok(response);
     }
 
     @PostMapping
-    public ResponseEntity<BookResponse> create(@RequestBody @Valid BookRequest request) {
+    public ResponseEntity<WebResponse<BookResponse>> create(@RequestBody @Valid BookRequest request) {
         Book model = bookMapper.toModel(request);
         Book book = bookService.create(model);
-        BookResponse response = bookMapper.toResponse(book);
 
+        BookResponse data = bookMapper.toResponse(book);
+
+        WebResponse<BookResponse> response = new WebResponse<>("Book created successfully.", data);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<BookResponse> update(@PathVariable("id") String id, @RequestBody @Valid BookRequest request) {
+    public ResponseEntity<WebResponse<BookResponse>> update(@PathVariable("id") String id, @RequestBody @Valid BookRequest request) {
         Book model = bookMapper.toModel(request);
         model.setId(id);
 
         Book updated = bookService.update(model);
-        BookResponse response = bookMapper.toResponse(updated);
+        BookResponse data = bookMapper.toResponse(updated);
 
+        WebResponse<BookResponse> response = new WebResponse<>("Book updated successfully.", data);
         return ResponseEntity.ok(response);
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> delete(@PathVariable("id") String id) {
+    public ResponseEntity<WebResponse<Void>> delete(@PathVariable("id") String id) {
         bookService.deleteById(id);
-        return ResponseEntity.ok().build();
+        return ResponseEntity.ok(new WebResponse<>("Book deleted successfully."));
     }
 
     @GetMapping("/{id}/reviews")
-    public ResponseEntity<List<ReviewResponse>> getReviews(@PathVariable("id") String id) {
+    public ResponseEntity<WebResponse<List<ReviewResponse>>> getReviews(@PathVariable("id") String id) {
         List<String> reviews = bookService.findReviewsById(id);
-        List<ReviewResponse> response = reviews.stream()
+        List<ReviewResponse> data = reviews.stream()
                 .map(ReviewResponse::new)
+                .map(item -> item
+                        .add(linkTo(methodOn(this.getClass()).getById(id)).withRel("book"))
+                )
                 .toList();
+
+        WebResponse<List<ReviewResponse>> response = new WebResponse<>("Success.", data);
         return ResponseEntity.ok(response);
     }
 
     @PostMapping("/{id}/reviews")
-    public ResponseEntity<ReviewResponse> addReview(@PathVariable("id") String id, @RequestBody @Valid ReviewRequest request) {
+    public ResponseEntity<WebResponse<ReviewResponse>> addReview(@PathVariable("id") String id, @RequestBody @Valid ReviewRequest request) {
         String review = bookService.addReviewById(id, request.getReview());
-        ReviewResponse response = new ReviewResponse(review);
+        ReviewResponse data = new ReviewResponse(review);
+
+        WebResponse<ReviewResponse> response = new WebResponse<>("Successfully add review.", data);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 }

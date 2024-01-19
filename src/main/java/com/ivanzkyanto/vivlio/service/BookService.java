@@ -1,12 +1,13 @@
 package com.ivanzkyanto.vivlio.service;
 
 import com.ivanzkyanto.vivlio.model.Book;
+import org.springframework.data.domain.Page;
 
 import java.util.List;
 
 public interface BookService {
 
-    List<Book> findAll();
+    Page<Book> findAll(Integer size, Integer pageNumber, String sort, String direction);
 
     Book findById(String id);
 

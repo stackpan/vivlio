@@ -7,6 +7,9 @@ import com.ivanzkyanto.vivlio.repository.gateway.BookGatewayRepository;
 import com.ivanzkyanto.vivlio.util.BookMapper;
 import com.ivanzkyanto.vivlio.util.UUIDs;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -23,12 +26,11 @@ public class BookGatewayRepositoryImpl implements BookGatewayRepository {
     private final BookMapper bookMapper;
 
     @Override
-    public List<Book> findAll() {
-        List<BookEntity> books = bookRepository.findAll();
+    public Page<Book> findAll(Integer size, Integer pageNumber, String sortField, String sortDirectionStr) {
+        Sort.Direction sortDirection = Sort.Direction.fromString(sortDirectionStr);
+        PageRequest pageRequest = PageRequest.of(pageNumber, size).withSort(sortDirection, sortField);
 
-        return books.stream()
-                .map(bookMapper::toModel)
-                .collect(Collectors.toList());
+        return bookRepository.findAll(pageRequest).map(bookMapper::toModel);
     }
 
     @Override
