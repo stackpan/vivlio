@@ -1,15 +1,17 @@
 package com.ivanzkyanto.vivlio.repository.gateway.impl;
 
 import com.ivanzkyanto.vivlio.entity.BookEntity;
-import com.ivanzkyanto.vivlio.exception.ResourceNotFoundException;
 import com.ivanzkyanto.vivlio.model.Book;
 import com.ivanzkyanto.vivlio.repository.BookRepository;
 import com.ivanzkyanto.vivlio.repository.gateway.BookGatewayRepository;
 import com.ivanzkyanto.vivlio.util.BookMapper;
+import com.ivanzkyanto.vivlio.util.UUIDs;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
-import java.util.*;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Repository
@@ -77,28 +79,6 @@ public class BookGatewayRepositoryImpl implements BookGatewayRepository {
         bookRepository.deleteById(toUuid(id));
     }
 
-    @Override
-    public List<String> findReviewsById(String id) {
-        BookEntity entity = safeFindById(id);
-
-        List<String> reviews = entity.getReviews();
-
-        if (Objects.isNull(reviews))
-            return new ArrayList<>();
-
-        return reviews;
-    }
-
-    @Override
-    public String addReviewById(String id, String review) {
-        BookEntity entity = safeFindById(id);
-
-        entity.getReviews().add(review);
-
-        bookRepository.save(entity);
-        return review;
-    }
-
     private BookEntity safeFindById(String id) {
         Optional<BookEntity> optionalBookEntity = bookRepository.findById(toUuid(id));
 
@@ -107,10 +87,6 @@ public class BookGatewayRepositoryImpl implements BookGatewayRepository {
     }
 
     private UUID toUuid(String id) {
-        try {
-            return UUID.fromString(id);
-        } catch (IllegalArgumentException ex) {
-            throw new ResourceNotFoundException(Book.class.getSimpleName(), id);
-        }
+        return UUIDs.toUuid(id, Book.class);
     }
 }

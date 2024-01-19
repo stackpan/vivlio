@@ -19,8 +19,4 @@ public interface BookGatewayRepository {
 
     void deleteById(String id);
 
-    List<String> findReviewsById(String id);
-
-    String addReviewById(String id, String review);
-
 }

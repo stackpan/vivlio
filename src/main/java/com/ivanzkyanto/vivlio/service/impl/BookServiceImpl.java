@@ -4,6 +4,7 @@ import com.ivanzkyanto.vivlio.exception.ResourceAlreadyExistsException;
 import com.ivanzkyanto.vivlio.exception.ResourceNotFoundException;
 import com.ivanzkyanto.vivlio.model.Book;
 import com.ivanzkyanto.vivlio.repository.gateway.BookGatewayRepository;
+import com.ivanzkyanto.vivlio.repository.gateway.BookReviewGatewayRepository;
 import com.ivanzkyanto.vivlio.service.BookService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -17,6 +18,8 @@ import java.util.Optional;
 public class BookServiceImpl implements BookService {
 
     private final BookGatewayRepository bookRepository;
+
+    private final BookReviewGatewayRepository bookReviewRepository;
 
     @Transactional(readOnly = true)
     @Override
@@ -60,14 +63,14 @@ public class BookServiceImpl implements BookService {
     @Override
     public List<String> findReviewsById(String id) {
         findByIdOrAbort(id);
-        return bookRepository.findReviewsById(id);
+        return bookReviewRepository.findReviewsById(id);
     }
 
     @Transactional
     @Override
     public String addReviewById(String id, String review) {
         findByIdOrAbort(id);
-        return bookRepository.addReviewById(id, review);
+        return bookReviewRepository.addReviewById(id, review);
     }
 
     private Book findByIdOrAbort(String id) {

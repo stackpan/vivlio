@@ -2,10 +2,10 @@ package com.ivanzkyanto.vivlio.entity;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -14,6 +14,7 @@ import java.util.UUID;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
 public class BookEntity {
 
     @Id
@@ -36,10 +37,8 @@ public class BookEntity {
     @Embedded
     private Dimension dimension;
 
-    @ElementCollection(fetch = FetchType.LAZY)
-    @CollectionTable(name = "reviews", joinColumns = @JoinColumn(name = "book_id"))
-    @Column(name = "body")
-    private List<String> reviews = new ArrayList<>();
+    @OneToMany(mappedBy = "book", fetch = FetchType.LAZY)
+    private List<BookReviewEntity> reviews;
 
     @Embeddable
     @Data
