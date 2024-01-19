@@ -4,6 +4,10 @@ import com.ivanzkyanto.vivlio.controller.dto.*;
 import com.ivanzkyanto.vivlio.model.Book;
 import com.ivanzkyanto.vivlio.service.BookService;
 import com.ivanzkyanto.vivlio.util.BookMapper;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -26,6 +30,7 @@ public class BookController {
     private final BookMapper bookMapper;
 
     @GetMapping
+    @Operation(summary = "Get all books", description = "Get all books")
     public ResponseEntity<WebResponse<List<BookResponse>>> getAll(
             @RequestParam(value = "size", required = false, defaultValue = "3") Integer size,
             @RequestParam(value = "page", required = false, defaultValue = "0") Integer page,
@@ -66,6 +71,17 @@ public class BookController {
     }
 
     @GetMapping("/{id}")
+    @Operation(
+            summary = "Get a book",
+            description = "Get book by id",
+            responses = {
+                    @ApiResponse(
+                            responseCode = "404",
+                            description = "Book not found",
+                            content = @Content(schema = @Schema(implementation = ErrorResponse.class))
+                    )
+            }
+    )
     public ResponseEntity<WebResponse<BookResponse>> getById(@PathVariable("id") String id) {
         Book book = bookService.findById(id);
         BookResponse data = bookMapper.toResponse(book)
@@ -77,6 +93,18 @@ public class BookController {
     }
 
     @PostMapping
+    @Operation(
+            summary = "Create book",
+            description = "Create book",
+            responses = {
+                    @ApiResponse(
+                            responseCode = "400",
+                            description = "Invalid response body",
+                            content = @Content(schema = @Schema(implementation = ErrorResponse.class))
+                    )
+            }
+    )
+    @ResponseStatus(HttpStatus.CREATED)
     public ResponseEntity<WebResponse<BookResponse>> create(@RequestBody @Valid BookRequest request) {
         Book model = bookMapper.toModel(request);
         Book book = bookService.create(model);
@@ -88,6 +116,22 @@ public class BookController {
     }
 
     @PutMapping("/{id}")
+    @Operation(
+            summary = "Update book",
+            description = "Update book info",
+            responses = {
+                    @ApiResponse(
+                            responseCode = "400",
+                            description = "Invalid response body",
+                            content = @Content(schema = @Schema(implementation = ErrorResponse.class))
+                    ),
+                    @ApiResponse(
+                            responseCode = "404",
+                            description = "Book not found",
+                            content = @Content(schema = @Schema(implementation = ErrorResponse.class))
+                    )
+            }
+    )
     public ResponseEntity<WebResponse<BookResponse>> update(@PathVariable("id") String id, @RequestBody @Valid BookRequest request) {
         Book model = bookMapper.toModel(request);
         model.setId(id);
@@ -100,12 +144,34 @@ public class BookController {
     }
 
     @DeleteMapping("/{id}")
+    @Operation(
+            summary = "Delete book",
+            description = "Delete book",
+            responses = {
+                    @ApiResponse(
+                            responseCode = "404",
+                            description = "Book not found",
+                            content = @Content(schema = @Schema(implementation = ErrorResponse.class))
+                    )
+            }
+    )
     public ResponseEntity<WebResponse<Void>> delete(@PathVariable("id") String id) {
         bookService.deleteById(id);
         return ResponseEntity.ok(new WebResponse<>("Book deleted successfully."));
     }
 
     @GetMapping("/{id}/reviews")
+    @Operation(
+            summary = "Get book reviews",
+            description = "Get book reviews by id",
+            responses = {
+                    @ApiResponse(
+                            responseCode = "404",
+                            description = "Book not found",
+                            content = @Content(schema = @Schema(implementation = ErrorResponse.class))
+                    )
+            }
+    )
     public ResponseEntity<WebResponse<List<ReviewResponse>>> getReviews(@PathVariable("id") String id) {
         List<String> reviews = bookService.findReviewsById(id);
         List<ReviewResponse> data = reviews.stream()
@@ -120,6 +186,23 @@ public class BookController {
     }
 
     @PostMapping("/{id}/reviews")
+    @Operation(
+            summary = "Add book reviews",
+            description = "Add book reviews by id",
+            responses = {
+                    @ApiResponse(
+                            responseCode = "400",
+                            description = "Invalid response body",
+                            content = @Content(schema = @Schema(implementation = ErrorResponse.class))
+                    ),
+                    @ApiResponse(
+                            responseCode = "404",
+                            description = "Book not found",
+                            content = @Content(schema = @Schema(implementation = ErrorResponse.class))
+                    )
+            }
+    )
+    @ResponseStatus(HttpStatus.CREATED)
     public ResponseEntity<WebResponse<ReviewResponse>> addReview(@PathVariable("id") String id, @RequestBody @Valid ReviewRequest request) {
         String review = bookService.addReviewById(id, request.getReview());
         ReviewResponse data = new ReviewResponse(review);
