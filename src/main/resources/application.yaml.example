@@ -25,3 +25,8 @@ spring:
       enabled: true
   jackson:
     default-property-inclusion: non-null
+rsa:
+  private-key:
+  public-key:
+jwt:
+  expiration: 3600
