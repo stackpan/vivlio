@@ -17,3 +17,14 @@ create table reviews
     book_id uuid not null references books (id),
     body    text not null
 );
+
+create table users
+(
+    id       uuid          not null primary key,
+    name     varchar(30)   not null unique,
+    email    varchar(50)   not null unique,
+    password varchar(1024) not null,
+    role     varchar(255)  not null
+);
+
+
