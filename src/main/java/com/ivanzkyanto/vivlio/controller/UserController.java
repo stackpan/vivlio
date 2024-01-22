@@ -10,7 +10,11 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/users")
@@ -20,6 +24,21 @@ public class UserController {
     private final UserService userService;
 
     private final UserMapper userMapper;
+
+    @GetMapping
+    @PreAuthorize("hasAuthority('SCOPE_ADMIN')")
+    public ResponseEntity<WebResponse<List<UserResponse>>> getAll(JwtAuthenticationToken principal) {
+        List<User> users = userService.getAll();
+
+        System.out.println(principal);
+
+        List<UserResponse> data = users.stream()
+                .map(userMapper::toResponse)
+                .toList();
+
+        WebResponse<List<UserResponse>> response = new WebResponse<>("Success", data);
+        return ResponseEntity.ok(response);
+    }
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)

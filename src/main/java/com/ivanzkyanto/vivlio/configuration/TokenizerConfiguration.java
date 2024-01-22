@@ -18,7 +18,7 @@ import org.springframework.security.oauth2.jwt.NimbusJwtEncoder;
 @RequiredArgsConstructor
 public class TokenizerConfiguration {
 
-    private final RsaKeyPropertiesConfiguration rsaProperties;
+    private final RsaPropertiesConfiguration rsaProperties;
 
     @Bean
     public JwtDecoder jwtDecoder() {

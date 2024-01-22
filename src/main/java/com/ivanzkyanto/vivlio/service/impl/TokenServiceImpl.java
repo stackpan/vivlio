@@ -1,6 +1,7 @@
 package com.ivanzkyanto.vivlio.service.impl;
 
 import com.ivanzkyanto.vivlio.configuration.JwtPropertiesConfiguration;
+import com.ivanzkyanto.vivlio.model.User;
 import com.ivanzkyanto.vivlio.service.TokenService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
@@ -24,17 +25,19 @@ public class TokenServiceImpl implements TokenService {
     @Override
     public String generate(Authentication authentication) {
         Instant now = Instant.now();
-        long expiration = 60 * 60L;
+        long expiration = jwtProperties.getExpiration();
+
+        User user = (User) authentication.getPrincipal();
 
         String scope = authentication.getAuthorities().stream()
                 .map(GrantedAuthority::getAuthority)
                 .collect(Collectors.joining(" "));
 
         JwtClaimsSet claims = JwtClaimsSet.builder()
+                .subject(user.getId())
                 .issuer("self")
                 .issuedAt(now)
                 .expiresAt(now.plusSeconds(expiration))
-                .subject(authentication.getName())
                 .claim("scope", scope)
                 .build();
 

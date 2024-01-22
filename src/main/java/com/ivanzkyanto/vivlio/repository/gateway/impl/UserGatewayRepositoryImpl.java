@@ -9,6 +9,7 @@ import com.ivanzkyanto.vivlio.util.UserMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Optional;
 
 @Repository
@@ -41,6 +42,13 @@ public class UserGatewayRepositoryImpl implements UserGatewayRepository {
         UserEntity saved = userRepository.save(entity);
 
         return userMapper.toModel(saved);
+    }
+
+    @Override
+    public List<User> getAll() {
+        return userRepository.findAll().stream()
+                .map(userMapper::toModel)
+                .toList();
     }
 
 }
