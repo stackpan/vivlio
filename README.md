@@ -1,6 +1,6 @@
 # Vivlio
 
-βιβλίο (Reading: Vivlio) in Greek means book. This is just simple Book management API. The goal of this project is to implementing HATEOAS architecture, authentication with JWT using OAuth2 Resource Server and method based authorization using built-in Spring Security. And also implement custom UserDetails and its service that can persisted into database.
+βιβλίο (Reading: Vivlio) in Greek means book. This is just simple Book management API. The goal of this project is to implementing HATEOAS architecture, authentication with JWT using OAuth2 Resource Server and method based authorization using built-in Spring Security. And also implement custom UserDetails and its service that can be persisted into database.
 
 ## Installation
 
